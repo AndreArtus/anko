@@ -28,9 +28,9 @@ import org.jetbrains.anko.db.*
 
 ## Accessing database
 
-If you use `SQLiteOpenHelper`, you generally call `getReadableDatabase()` or `getWritableDatabase()` (result is actually the same in production code), but then you must be sure to call the `close()` method on the received `SQLiteDatabase`. Also, you have to cache the helper class somewhere, and if you use it from several threads, you must be aware of the concurrent access. All this is pretty though. That is why Android developers not really keen on default SQLite API and prefer to use fairly expensive wrappers such as ORMs instead.
+If you use `SQLiteOpenHelper`, you generally call `getReadableDatabase()` or `getWritableDatabase()` (result is actually the same in production code), but then you must be sure to call the `close()` method on the received `SQLiteDatabase`. Also, you have to cache the helper class somewhere, and if you use it from several threads, you must be aware of the concurrent access. All this is pretty tough. That is why Android developers are not really keen on using the default SQLite API and prefer instead to use fairly expensive wrappers such as ORMs.
 
-Anko provides a special class `ManagedSQLiteOpenHelper` that seamlessly replaces the default one. That's how you can use it:
+Anko provides a special class `ManagedSQLiteOpenHelper` that seamlessly replaces the default one. Here's how you can use it:
 
 ```kotlin
 class MyDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "MyDatabase", null, 1) {
@@ -60,7 +60,7 @@ val Context.database: MyDatabaseOpenHelper
     get() = MyDatabaseOpenHelper.getInstance(getApplicationContext())
 ```
 
-So what's the sense? Instead of enclosing your code into `try` blocks, now you can just write this:
+So what's the advantage? Instead of enclosing your code into `try` blocks, now you can just write this:
 
 ```kotlin
 database.use {
@@ -95,7 +95,7 @@ class SomeActivity : Activity() {
 
 ## Creating and dropping tables
 
-With Anko you can easily create new tables and drop existing. The syntax is straightforward.
+With Anko you can easily create new tables and drop existing ones. The syntax is straightforward.
 
 ```kotlin
 database.use {
@@ -106,7 +106,7 @@ database.use {
 }
 ```
 
-In SQLite there are five main types: `NULL`, `INTEGER`, `REAL`, `TEXT` and `BLOB`. But each column may have some modificators like `PRIMARY KEY` or `UNIQUE`. You can append such modificators with "adding" them to the primary type name.
+In SQLite there are five main types: `NULL`, `INTEGER`, `REAL`, `TEXT` and `BLOB`. But each column may have some modificators like `PRIMARY KEY` or `UNIQUE`. You can append such modificators by "adding" them to the primary type name.
 
 To drop table, use the `dropTable` function:
 
@@ -136,7 +136,7 @@ db.insert("User",
 )
 ```
 
-Functions `insertOrThrow()`, `replace()`, `replaceOrThrow()` are also exist and have the similar semantics.
+Functions `insertOrThrow()`, `replace()`, `replaceOrThrow()` also exist, and have similar semantics.
 
 ## Querying data
 
@@ -157,7 +157,7 @@ Method                                | Description
 `having(String)`                      | Specify raw `having` expression
 `having(String, args)` :star:         | Specify a `having` expression with arguments
 
-Functions marked with :star: parse its arguments in a special way. They allow you to provide values in any order and support escaping seamlessly.
+Functions marked with :star: parse their arguments in a special way. They allow you to provide values in any order and support escaping seamlessly.
 
 ```kotlin
 db.select("User", "name")
@@ -170,7 +170,7 @@ Here, `{userId}` part will be replaced with `42` and `{userName}` — with `'Joh
 
 `where?` function accepts arguments of `String` type. It works the same as [`query()`](http://developer.android.com/reference/android/database/sqlite/SQLiteDatabase.html#query(java.lang.String,%20java.lang.String[],%20java.lang.String,%20java.lang.String[],%20java.lang.String,%20java.lang.String,%20java.lang.String)) from `SQLiteDatabase` (question marks `?` will be replaced with actual values from arguments).
 
-How can we execute the query? Using `exec()` function. It accepts an extension function which type is `Cursor.() -> T`. It simply launches the received extension function and then closes `Cursor` so you don't need to do it by yourself:
+How can we execute the query? By using the `exec()` function. It accepts an extension function which type is `Cursor.() -> T`. It simply launches the received extension function and then closes `Cursor` so you don't need to do it by yourself:
 
 ```kotlin
 db.select("User", "email").exec {
@@ -180,7 +180,7 @@ db.select("User", "email").exec {
 
 ## Parsing query result
 
-So we have some `Cursor`, and how can we parse it into regular classes? Anko provides functions `parseSingle`, `parseOpt` and `parseList` to do it much more easier.
+So we have some `Cursor`, and how can we parse it into regular classes? Anko provides functions `parseSingle`, `parseOpt` and `parseList` to do it much easier.
 
 Method                                | Description
 --------------------------------------|---------- 
@@ -226,13 +226,13 @@ The parser will be as simple as:
 val rowParser = classParser<Person>()
 ```
 
-For now Anko **does not support** creating such parsers if the primary constructor has optional parameters. Also note that constructor will be invoked using Java Reflection so writing a custom `RowParser` is more reasonable for huge data sets.
+For now Anko **does not support** creating such parsers if the primary constructor has optional parameters. Also note that the constructor will be invoked using Java Reflection so writing a custom `RowParser` is more reasonable for huge data sets.
 
 If you are using Anko `db.select()` builder, you can directly call `parseSingle`, `parseOpt` or `parseList` on it and pass an appropriate parser.
 
 ## Custom row parsers
 
-For instance, let's make a new parser for columns `(Int, String, String)`. The most naive way to do so is:
+For instance, let's make a new parser for columns `(Int, String, String)`. The most naïve way to do so is:
 
 ```kotlin
 public class MyRowParser : RowParser<Triple<Int, String, String>> {
@@ -254,11 +254,11 @@ And that's it! `rowParser` makes all class casts under the hood and you can name
 
 ## Cursor streams
 
-Anko provides a way to access SQLite `Cursor` in functional way. Just call `cursor.asSequence()` or `cursor.asMapSequence()` extension functions to get a sequence or rows. Do not forget to close a `Cursor` :)
+Anko provides a way to access SQLite `Cursor` in a functional way. Just call `cursor.asSequence()` or `cursor.asMapSequence()` extension functions to get a sequence or rows. Do not forget to close the `Cursor` :)
 
 ## Updating values
 
-Let's give the a new name to one of our users:
+Let's give a new name to one of our users:
 
 ```kotlin
 update("User", "name" to "Alice")
@@ -266,7 +266,7 @@ update("User", "name" to "Alice")
     .exec()
 ```
 
-Update also contains `where?()` function in case you want to provide query in a traditional way:
+Update also contains a `where?()` function in case you want to filter in the traditional way:
 
 ```kotlin
 update("User", "name" to "Alice")
@@ -284,7 +284,7 @@ transaction {
 }
 ```
 
-Transaction will be marked marked as successful if no exception was thrown inside the `{}` block.
+Transaction will be marked as successful if no exception was thrown inside the `{}` block.
 
 <table>
 <tr><td width="50px" align="center">:penguin:</td>
